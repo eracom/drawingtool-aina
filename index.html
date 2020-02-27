@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/style.css">
+    <title>MALAISE | Drawing & Music Tool</title>
+  </head>
+
+  <body>
+    <div class="title">
+      <h1>MALAISE<br>TOOL</h1>
+    </div>
+
+    <div class="popup" onclick="myFunction()">?
+      <span class="popuptext" id="myPopup">Select a famous painting pattern and draw while letting Dalida and Alain's voice guide you! </span>
+    </div>
+
+    <div id="control">
+      <h1>Options</h1>
+      <ul>
+        <li class="label">Pattern</li>
+        <li>
+          <select id="patternPicker">
+            <option value="monet.jpg">monet</option>
+            <option value="basquiat.jpg">basquiat</option>
+            <option value="matisse.jpg">matisse</option>
+            <option value="dubuffet.jpg">dubuffet</option>
+            <option value="fouquet2.jpg">fouquet</option>
+            <option value="dejeuner.jpg">renoir</option>
+            <option value="ingres.jpg">ingres</option>
+            <option value="bronzino.jpg">bronzino</option>
+            <option value="pollock.jpg">pollock</option>
+            <option value="kandinsky.jpg">kandinsky</option>
+            <option value="gaugin.jpg">gaugin</option>
+            <option value="vangogh.jpg">vangogh</option>
+            <option value="picasso.jpg">picasso</option>
+            <option value="botero.jpg">botero</option>
+            <option value="stilllife.jpg">still life</option>
+          </select>
+        </li>
+        <li class="label">Background</li>
+        <li>
+          <select id="backgroundPicker">
+            <option value="black">black</option>
+            <option value="coral">coral</option>
+            <option value="gold">gold</option>
+            <option value="lightpink">light pink</option>
+            <option value="silver">silver</option>
+          </select>
+        </li>
+        <li><button id="resetButton">reset</button></li>
+        <li><a id="downloadLink" download="cash_monet.png"><img src="down-arrow2.png"></a></li>
+      </ul>
+    </div>
+
+    <footer>
+      <a href="http://www.ainart.ch" target="blank">www.ainart.ch</a>
+    </footer>
+
+    <audio id="monet" src="audio/dalida.mp3"></audio>
+    <audio id="basquiat" src="audio/krieger.mp3"></audio>
+    <audio id="matisse" src="audio/arielle.mp3"></audio>
+    <audio id="dubuffet" src="audio/bandolero.mp3"></audio>
+    <audio id="fouquet2" src="audio/compagnie.mp3"></audio>
+    <audio id="dejeuner" src="audio/franky.mp3"></audio>
+    <audio id="ingres" src="audio/clerc.mp3"></audio>
+    <audio id="bronzino" src="audio/lavilliers.mp3"></audio>
+    <audio id="pollock" src="audio/serge.mp3"></audio>
+    <audio id="kandinsky" src="audio/joe.mp3"></audio>
+    <audio id="gaugin" src="audio/zoukmachine.mp3"></audio>
+    <audio id="vangogh" src="audio/axel.mp3"></audio>
+    <audio id="picasso" src="audio/henrisalvador.mp3"></audio>
+    <audio id="botero" src="audio/miriam.mp3"></audio>
+    <audio id="stilllife" src="audio/rita.mp3"></audio>
+
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script>
+
+      var canvas,
+          context,
+          pattern,
+          mouse = { x: 0, y: 0 },
+          audio;
+
+      draw();
+
+      function draw() {
+        var resetButton = document.getElementById('resetButton'),
+            patternPicker = document.getElementById('patternPicker'),
+            backgroundPicker = document.getElementById('backgroundPicker'),
+            downloadLink = document.getElementById('downloadLink');
+
+
+        audio = document.getElementById('monet');
+        audio.loop = true;
+        pattern = new Image();
+        pattern.src = patternPicker.value;
+        patternPicker.addEventListener('change', function() {
+          pattern.src = this.value;
+          var audioSrc = this.value.slice(0, -4);
+          audio = document.getElementById(audioSrc);
+          audio.loop = true;
+          console.log(audio);
+          context.strokeStyle = getPattern();
+        });
+        downloadLink.addEventListener('click', function() {
+          var image = canvas.toDataURL('image/png')
+          downloadLink.href = image;
+        });
+
+        backgroundPicker.addEventListener('change', function() {
+          var color = backgroundPicker.value;
+          context.fillStyle = color;
+          context.fillRect(0, 0, canvas.width, canvas.height);
+        });
+
+        resetButton.addEventListener('click', function() {
+          context.clearRect(0, 0, canvas.width, canvas.height);
+          context.fillStyle = 'black';
+          context.fillRect(0, 0, canvas.width, canvas.height);
+        });
+
+        canvas = document.createElement('canvas');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        canvas.style.cursor = 'crosshair';
+
+        context = canvas.getContext('2d');
+        context.fillStyle = 'black';
+        context.fillRect(0, 0, canvas.width, canvas.height);
+
+        canvas.addEventListener('mousedown', onMouseDown, false);
+        canvas.addEventListener('mouseup', onMouseUp, false);
+        document.body.appendChild(canvas);
+      }
+
+      function midPointBtw(p1, p2) {
+        return {
+          x: p1.x + (p2.x - p1.x) / 2,
+          y: p1.y + (p2.y - p1.y) / 2
+        };
+      }
+
+      function getPattern() {
+        return context.createPattern(pattern, 'repeat');
+      }
+
+      var img = new Image;
+
+        context.strokeStyle = getPattern();
+      img.src = pattern.src;
+
+      var isDrawing, points = [ ];
+
+      function onMouseDown(event) {
+        mouse.x = event.clientX;
+        mouse.y = event.clientY;
+        document.addEventListener('mousemove', onMouseMove, false);
+        audio.play();
+      }
+
+      function onMouseMove(event) {
+        context.beginPath();
+        context.moveTo( mouse.x, mouse.y );
+        context.lineTo( event.clientX, event.clientY);
+        context.stroke();
+        context.lineWidth = 30;
+        context.lineJoin = context.lineCap = 'round';
+        context.strokeStyle = getPattern();
+        mouse.x = event.clientX;
+        mouse.y = event.clientY;
+      }
+
+      function onMouseUp(event) {
+        document.removeEventListener('mousemove', onMouseMove, false);
+        audio.currentTime = 0;
+        audio.pause();
+      }
+
+      $( function() {
+      $( "#control" ).draggable();
+      });
+
+      function myFunction() {
+      var popup = document.getElementById("myPopup");
+      popup.classList.toggle("show");
+      }
+
+    </script>
+
+  </body>
+</html>
